@@ -1,0 +1,5 @@
+.venv_yolo/
+__pycache__/
+runs/
+yolo_stop_sign_dataset/
+*.zip
