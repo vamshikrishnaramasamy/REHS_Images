@@ -7,7 +7,7 @@ from ultralytics import YOLO
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Live stop-sign detector at 640x400 camera input.")
-    parser.add_argument("--model", default="/Users/vamshikrishnaramasamy/Downloads/best.pt")
+    parser.add_argument("--model", default="best.pt")
     parser.add_argument("--camera", type=int, default=0)
     parser.add_argument("--conf", type=float, default=0.25)
     args = parser.parse_args()
