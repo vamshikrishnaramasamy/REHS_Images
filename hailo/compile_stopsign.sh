@@ -32,8 +32,13 @@ python3 -c "import hailo_sdk_client" 2>/dev/null || {
   echo "hailo_sdk_client not importable — install the Hailo Dataflow Compiler wheel first."; exit 1; }
 
 echo "==> 1/3 Parse ONNX -> HAR"
+# YOLOv8's DFL box-decode head (Sub/Add/Transpose on the detect output) is not
+# Hailo-supported, so cut the graph before it. The remaining decode (anchor +
+# DFL -> xywh) is done on the host. -y auto-accepts the parser's end-node split.
 hailo parser onnx "$ONNX" \
   --hw-arch "$HW_ARCH" \
+  --end-node-names /model.22/Sigmoid /model.22/dfl/Reshape \
+  -y \
   --har-path "$OUTDIR/${NAME}.har"
 
 echo "==> 2/3 Optimize/quantize (calibrated on repo stop-sign images)"
