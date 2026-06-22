@@ -32,12 +32,17 @@ python3 -c "import hailo_sdk_client" 2>/dev/null || {
   echo "hailo_sdk_client not importable — install the Hailo Dataflow Compiler wheel first."; exit 1; }
 
 echo "==> 1/3 Parse ONNX -> HAR"
-# YOLOv8's DFL box-decode head (Sub/Add/Transpose on the detect output) is not
-# Hailo-supported, so cut the graph before it. The remaining decode (anchor +
-# DFL -> xywh) is done on the host. -y auto-accepts the parser's end-node split.
+# YOLOv8's DFL box-decode head (Sub/Add/Transpose/DFL-reshape) is not
+# Hailo-mappable, so cut the graph at the 6 detection-head conv outputs
+# (Hailo Model Zoo's standard yolov8 split: cv2.* = box-distribution logits,
+# cv3.* = class logits, for the 3 strides). All decode — DFL softmax+sum,
+# anchor/stride scaling, class sigmoid, NMS — is done on the host.
 hailo parser onnx "$ONNX" \
   --hw-arch "$HW_ARCH" \
-  --end-node-names /model.22/Sigmoid /model.22/dfl/Reshape \
+  --end-node-names \
+    /model.22/cv2.0/cv2.0.2/Conv /model.22/cv3.0/cv3.0.2/Conv \
+    /model.22/cv2.1/cv2.1.2/Conv /model.22/cv3.1/cv3.1.2/Conv \
+    /model.22/cv2.2/cv2.2.2/Conv /model.22/cv3.2/cv3.2.2/Conv \
   -y \
   --har-path "$OUTDIR/${NAME}.har"
 
