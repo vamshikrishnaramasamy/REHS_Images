@@ -3,3 +3,6 @@ __pycache__/
 runs/
 yolo_stop_sign_dataset/
 *.zip
+.pip_tmp/
+hailo/calib.npy
+hailo/out/
